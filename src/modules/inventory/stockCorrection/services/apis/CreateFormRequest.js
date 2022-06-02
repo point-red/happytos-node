@@ -83,6 +83,8 @@ async function createStockCorrection(tenantDatabase, { createFormRequestDto, tra
   const stockCorrection = await tenantDatabase.StockCorrection.create(
     {
       warehouseId: createFormRequestDto.warehouseId,
+      typeCorrection: createFormRequestDto.typeCorrection,
+      qcPassed: createFormRequestDto.qcPassed
     },
     { transaction }
   );

@@ -20,6 +20,13 @@ module.exports = (sequelize, DataTypes, projectCode) => {
       warehouseId: {
         type: DataTypes.INTEGER.UNSIGNED,
       },
+      typeCorrection: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      qcPassed: {
+        type: DataTypes.BOOLEAN,
+      },
     },
     {
       hooks: {},
