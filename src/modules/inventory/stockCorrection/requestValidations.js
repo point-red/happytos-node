@@ -28,24 +28,26 @@ const createFormRequest = {
     }),
     notes: Joi.string().default('').allow(null).max(255),
     requestApprovalTo: Joi.number().required(),
+    typeCorrection: Joi.string().required(),
+    qcPassed: Joi.number().required()
   }),
 };
 
 const createFormReject = {
   body: Joi.object({
-    reason: Joi.string().allow(null).default(''),
+    reason: Joi.string().required(),
   }),
 };
 
 const deleteFormRequest = {
   body: Joi.object({
-    reason: Joi.string().allow(null).default(''),
+    reason: Joi.string().required(),
   }),
 };
 
 const deleteFormReject = {
   body: Joi.object({
-    reason: Joi.string().allow(null).allow('').default(''),
+    reason: Joi.string().required(),
   }),
 };
 
