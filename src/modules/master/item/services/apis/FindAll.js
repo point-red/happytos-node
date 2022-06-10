@@ -14,7 +14,7 @@ class FindAll {
           model: this.tenantDatabase.Inventory,
           as: 'inventories',
           where: { warehouseId: this.queries.warehouse_id },
-          required: true,
+          required: false,
         },
         {
           model: this.tenantDatabase.ItemUnit,
