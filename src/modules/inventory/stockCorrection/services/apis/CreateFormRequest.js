@@ -1,13 +1,16 @@
 const httpStatus = require('http-status');
 const ApiError = require('@src/utils/ApiError');
+const config = require('@src/config/config');
 const GetCurrentStock = require('@src/modules/inventory/services/GetCurrentStock');
+const moment = require('moment-timezone');
 const ProcessSendCreateApprovalWorker = require('../../workers/ProcessSendCreateApproval.worker');
 
 class CreateFormRequest {
-  constructor(tenantDatabase, { maker, createFormRequestDto }) {
+  constructor(tenantDatabase, { maker, createFormRequestDto, timezone }) {
     this.tenantDatabase = tenantDatabase;
     this.maker = maker;
     this.createFormRequestDto = createFormRequestDto;
+    this.timezone = timezone;
   }
 
   async call() {
@@ -39,6 +42,7 @@ class CreateFormRequest {
         warehouse,
         createFormRequestDto: this.createFormRequestDto,
         transaction,
+        timezone: this.timezone ? this.timezone : config.timezone
       });
     });
 
@@ -167,7 +171,7 @@ function getMonthFormattedString(currentDate) {
 
 async function addStockCorrectionItem(
   tenantDatabase,
-  { stockCorrection, stockCorrectionForm, warehouse, createFormRequestDto, transaction }
+  { stockCorrection, stockCorrectionForm, warehouse, createFormRequestDto, transaction, timezone }
 ) {
   const { items: itemsRequest } = createFormRequestDto;
   const doAddStockCorrectionItem = itemsRequest.map(async (itemRequest) => {
@@ -175,13 +179,12 @@ async function addStockCorrectionItem(
       throw new ApiError(httpStatus.BAD_REQUEST, 'Only can use smallest item unit');
     }
     const item = await tenantDatabase.Item.findOne({ where: { id: itemRequest.itemId } });
-
     const itemStock = await new GetCurrentStock(tenantDatabase, {
       item,
       date: stockCorrectionForm.date,
       warehouseId: warehouse.id,
       options: {
-        expiryDate: itemRequest.expiryDate,
+        expiryDate: itemRequest.expiryDate ? moment.tz(itemRequest.expiryDate, timezone).tz('UTC').toDate() : itemRequest.expiryDate,
         productionNumber: itemRequest.productionNumber,
       },
     }).call();
@@ -197,7 +200,7 @@ async function addStockCorrectionItem(
         converter: itemRequest.converter,
         notes: itemRequest.notes,
         allocationId: itemRequest.allocationId,
-        ...(itemRequest.expiryDate && { expiryDate: itemRequest.expiryDate }),
+        ...(itemRequest.expiryDate && { expiryDate: moment.tz(itemRequest.expiryDate, timezone).tz('UTC').toDate() }),
         ...(itemRequest.productionNumber && { productionNumber: itemRequest.productionNumber }),
       },
       { transaction }
