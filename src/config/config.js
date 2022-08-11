@@ -49,6 +49,7 @@ const envVarsSchema = Joi.object()
     AWS_SECRET_ACCESS_KEY: Joi.string().description('aws secret access key'),
     AWS_S3_BUCKET_NAME: Joi.string().description('aws s3 bucket name'),
     AWS_S3_BASE_URL: Joi.string().description('aws s3 base url'),
+    TZ: Joi.string().required().description('default timezone')
   })
   .unknown();
 
@@ -124,4 +125,5 @@ module.exports = {
     s3BucketName: envVars.AWS_S3_BUCKET_NAME,
     s3BaseUrl: envVars.AWS_S3_BASE_URL,
   },
+  timezone: envVars.TZ
 };
