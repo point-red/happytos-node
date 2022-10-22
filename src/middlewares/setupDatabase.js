@@ -9,10 +9,14 @@ const { Project } = database.main;
 module.exports = async function setupDatabase(req, res, next) {
   try {
     const {
-      headers: { tenant },
+      headers: { tenant, timezone },
     } = req;
     if (!tenant) {
       return next(new ApiError(httpStatus.BAD_REQUEST, 'Tenant headers is required'));
+    }
+
+    if (timezone) {
+      process.env.TZ = timezone
     }
 
     const project = await Project.findOne({ where: { code: tenant } });
