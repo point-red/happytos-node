@@ -22,7 +22,7 @@ const createFormRequest = {
       converter: Joi.number().required(),
       stockCorrection: Joi.number().required(),
       notes: Joi.string().default('').allow(null).max(255),
-      expiryDate: Joi.date().iso().raw().allow(null),
+      expiryDate: Joi.date().iso().allow(null),
       productionNumber: Joi.string().allow(null),
       allocationId: Joi.number().allow(null),
     }),

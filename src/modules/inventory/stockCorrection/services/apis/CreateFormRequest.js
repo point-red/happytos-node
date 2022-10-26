@@ -1,16 +1,13 @@
 const httpStatus = require('http-status');
 const ApiError = require('@src/utils/ApiError');
-const config = require('@src/config/config');
 const GetCurrentStock = require('@src/modules/inventory/services/GetCurrentStock');
-const moment = require('moment-timezone');
 const ProcessSendCreateApprovalWorker = require('../../workers/ProcessSendCreateApproval.worker');
 
 class CreateFormRequest {
-  constructor(tenantDatabase, { maker, createFormRequestDto, timezone }) {
+  constructor(tenantDatabase, { maker, createFormRequestDto }) {
     this.tenantDatabase = tenantDatabase;
     this.maker = maker;
     this.createFormRequestDto = createFormRequestDto;
-    this.timezone = timezone;
   }
 
   async call() {
@@ -42,7 +39,6 @@ class CreateFormRequest {
         warehouse,
         createFormRequestDto: this.createFormRequestDto,
         transaction,
-        timezone: this.timezone ? this.timezone : config.timezone
       });
     });
 
@@ -171,7 +167,7 @@ function getMonthFormattedString(currentDate) {
 
 async function addStockCorrectionItem(
   tenantDatabase,
-  { stockCorrection, stockCorrectionForm, warehouse, createFormRequestDto, transaction, timezone }
+  { stockCorrection, stockCorrectionForm, warehouse, createFormRequestDto, transaction }
 ) {
   const { items: itemsRequest } = createFormRequestDto;
   const doAddStockCorrectionItem = itemsRequest.map(async (itemRequest) => {
@@ -184,7 +180,7 @@ async function addStockCorrectionItem(
       date: stockCorrectionForm.date,
       warehouseId: warehouse.id,
       options: {
-        expiryDate: itemRequest.expiryDate ? moment.tz(itemRequest.expiryDate, timezone).tz('UTC').toDate() : itemRequest.expiryDate,
+        expiryDate: itemRequest.expiryDate,
         productionNumber: itemRequest.productionNumber,
       },
     }).call();
@@ -200,7 +196,7 @@ async function addStockCorrectionItem(
         converter: itemRequest.converter,
         notes: itemRequest.notes,
         allocationId: itemRequest.allocationId,
-        ...(itemRequest.expiryDate && { expiryDate: moment.tz(itemRequest.expiryDate, timezone).tz('UTC').toDate() }),
+        ...(itemRequest.expiryDate && { expiryDate: itemRequest.expiryDate }),
         ...(itemRequest.productionNumber && { productionNumber: itemRequest.productionNumber }),
       },
       { transaction }

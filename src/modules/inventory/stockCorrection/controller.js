@@ -29,11 +29,10 @@ const findOne = catchAsync(async (req, res) => {
 });
 
 const createFormRequest = catchAsync(async (req, res) => {
-  const { currentTenantDatabase, user: maker, body: createFormRequestDto, headers: { timezone } } = req;
+  const { currentTenantDatabase, user: maker, body: createFormRequestDto } = req;
   const stockCorrection = await new apiServices.CreateFormRequest(currentTenantDatabase, {
     maker,
     createFormRequestDto,
-    timezone,
   }).call();
 
   res.status(httpStatus.CREATED).send({ data: stockCorrection });
