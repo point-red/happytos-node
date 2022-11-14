@@ -260,7 +260,7 @@ describe('Stock Correction - Create Form Request', () => {
     });
 
     it('throws error when required data is empty', async () => {
-      createFormRequestDto.typeCorrection = null;
+      createFormRequestDto.items = [];
 
       await expect(async () => {
         await new CreateFormRequest(tenantDatabase, {

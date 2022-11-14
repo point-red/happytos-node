@@ -186,6 +186,9 @@ async function addStockCorrectionItem(
   { stockCorrection, stockCorrectionForm, warehouse, createFormRequestDto, transaction }
 ) {
   const { items: itemsRequest } = createFormRequestDto;
+  if (!itemsRequest || itemsRequest?.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
+  }
   const doAddStockCorrectionItem = itemsRequest.map(async (itemRequest) => {
     if (itemRequest.converter !== 1) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Only can use smallest item unit');
