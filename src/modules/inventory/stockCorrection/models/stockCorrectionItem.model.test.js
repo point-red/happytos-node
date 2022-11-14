@@ -28,7 +28,7 @@ describe('Stock Correction Item Model', () => {
 
       const expiryDate = new Date('2022-03-03');
       stockCorrectionItem.expiryDate = expiryDate;
-      expect(stockCorrectionItem.expiryDate).toEqual('2022-03-03 07:00:00');
+      expect(stockCorrectionItem.expiryDate).toContain('2022-03-03');
     });
   });
 });

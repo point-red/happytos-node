@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const ApiError = require('@src/utils/ApiError');
+const validatePermission = require('@src/utils/permission');
 const GetCurrentStock = require('@src/modules/inventory/services/GetCurrentStock');
 const ProcessSendUpdateApprovalWorker = require('../../workers/ProcessSendUpdateApproval.worker');
 
@@ -20,8 +21,10 @@ class UpdateForm {
         { model: this.tenantDatabase.Warehouse, as: 'warehouse' },
       ],
     });
+    
+    const { requestApprovalTo } = this.updateFormDto;
     const { form: stockCorrectionForm, warehouse } = stockCorrection;
-    validate(stockCorrectionForm, this.maker);
+    await validate(this.tenantDatabase, { stockCorrectionForm, warehouse, maker: this.maker, requestApprovalTo });
 
     await this.tenantDatabase.sequelize.transaction(async (transaction) => {
       await deleteJournal(this.tenantDatabase, { stockCorrectionForm, transaction });
@@ -49,9 +52,39 @@ class UpdateForm {
   }
 }
 
-function validate(stockCorrectionForm, maker) {
+async function validate(tenantDatabase, { stockCorrectionForm, warehouse, maker, requestApprovalTo }) {
   if (stockCorrectionForm.createdBy !== maker.id) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden - Only maker can update the stock correction');
+  }
+  await validateBranchDefaultPermission(tenantDatabase, { makerId: maker.id, branchId: warehouse.branchId });
+  await validateWarehouseDefaultPermission(tenantDatabase, { makerId: maker.id, warehouseId: warehouse.id });
+  await validatePermission(tenantDatabase, { userId: maker.id, permissionName: 'update stock correction' });
+  await validatePermission(tenantDatabase, { userId: requestApprovalTo, permissionName: 'approve stock correction' });
+}
+
+async function validateBranchDefaultPermission(tenantDatabase, { makerId, branchId }) {
+  const branchUser = await tenantDatabase.BranchUser.findOne({
+    where: {
+      userId: makerId,
+      branchId,
+      isDefault: true,
+    },
+  });
+  if (!branchUser) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+  }
+}
+
+async function validateWarehouseDefaultPermission(tenantDatabase, { makerId, warehouseId }) {
+  const userWarehouse = await tenantDatabase.UserWarehouse.findOne({
+    where: {
+      userId: makerId,
+      warehouseId,
+      isDefault: true,
+    },
+  });
+  if (!userWarehouse) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
   }
 }
 
@@ -68,9 +101,15 @@ async function addNewStockCorrectionItems(
   { stockCorrection, stockCorrectionForm, warehouse, updateFormDto, transaction }
 ) {
   const { items: itemsRequest } = updateFormDto;
+  if (!itemsRequest) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
+  }
   const doAddStockCorrectionItem = itemsRequest.map(async (itemRequest) => {
     if (itemRequest.converter !== 1) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Only can use smallest item unit');
+    }
+    if (typeof itemRequest.stockCorrection === 'string') {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
     }
     const item = await tenantDatabase.Item.findOne({ where: { id: itemRequest.itemId } });
 
@@ -113,11 +152,21 @@ async function updateStockCorrectionForm({ maker, updateFormDto, stockCorrection
 }
 
 async function buildFormData({ maker, updateFormDto }) {
-  const { notes, requestApprovalTo } = updateFormDto;
+  let { notes, requestApprovalTo } = updateFormDto;
+
+  if (notes) {
+    if (notes.charAt(0) === ' ') {
+      notes = notes.substring(1)
+    }
+  
+    if (notes.charAt(notes.length - 1) === ' ') {
+      notes = notes.slice(0, -1);
+    }
+  }
 
   return {
     date: new Date(),
-    notes,
+    notes: notes ? notes.replace(/  /g, ' ').substring(0, 255) : notes,
     updatedBy: maker.id,
     requestApprovalTo,
     done: false,
