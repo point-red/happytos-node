@@ -101,7 +101,7 @@ async function addNewStockCorrectionItems(
   { stockCorrection, stockCorrectionForm, warehouse, updateFormDto, transaction }
 ) {
   const { items: itemsRequest } = updateFormDto;
-  if (!itemsRequest) {
+  if (!itemsRequest || itemsRequest?.length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
   }
   const doAddStockCorrectionItem = itemsRequest.map(async (itemRequest) => {

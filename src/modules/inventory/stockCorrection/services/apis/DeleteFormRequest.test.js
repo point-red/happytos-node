@@ -124,6 +124,28 @@ describe('Stock Correction - Delete Form Request', () => {
       }).rejects.toThrow('Forbidden');
     });
 
+    it('throws error if user doesnt have permission to delete', async () => {
+      const recordFactories = await generateRecordFactories();
+      const { maker } = recordFactories;
+      let { stockCorrection } = recordFactories;
+      const role = await Role.create({ name: 'user', guardName: 'api' });
+      await ModelHasRole.create({
+        roleId: role.id,
+        modelId: maker.id,
+        modelType: 'App\\Model\\Master\\User',
+      });
+      
+      await expect(async () => {
+        ({ stockCorrection } = await new DeleteFormRequest(tenantDatabase, {
+          maker,
+          stockCorrectionId: stockCorrection.id,
+          deleteFormRequestDto: {
+            reason: 'example reason',
+          },
+        }).call());
+      }).rejects.toThrow('Forbidden');
+    });
+
     it('throw error if reason empty', async () => {
       const recordFactories = await generateRecordFactories();
       let { stockCorrection, maker } = recordFactories;

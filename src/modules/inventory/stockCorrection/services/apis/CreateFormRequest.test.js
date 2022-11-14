@@ -60,6 +60,7 @@ describe('Stock Correction - Create Form Request', () => {
 
       expect(stockCorrectionForm).toBeDefined();
       expect(stockCorrectionForm.number).toEqual('SC2101001');
+      expect(stockCorrectionForm.date.toISOString().slice(0, 10)).toEqual(new Date().toISOString().slice(0, 10));
       expect(stockCorrectionForm.approvalStatus).toEqual(0); // pending
     });
 

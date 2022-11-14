@@ -73,6 +73,12 @@ describe('Stock Correction - Update Form', () => {
           expect(data.stockCorrection.form.number).toEqual(stockCorrectionForm.number);
         });
 
+        it('update form with current date', async () => {
+          const data = await new UpdateForm(tenantDatabase, { maker, stockCorrectionId: stockCorrection.id, updateFormDto }).call();
+    
+          expect(data.stockCorrection.form.date.toISOString().slice(0, 10)).toEqual(new Date().toISOString().slice(0, 10));
+        });
+
         it('has correct stock correction data', async () => {
           ({ stockCorrection } = await new UpdateForm(tenantDatabase, { maker, stockCorrectionId: stockCorrection.id, updateFormDto }).call());
 
@@ -80,6 +86,12 @@ describe('Stock Correction - Update Form', () => {
           expect(stockCorrection.items[0].quantity).toEqual(updateFormDto.items[0].stockCorrection);
           expect(stockCorrection.items[0].allocationId).toEqual(updateFormDto.items[0].allocationId);
         });
+
+        it('check final balance', async () => {
+          ({ stockCorrection } = await new UpdateForm(tenantDatabase, { maker, stockCorrectionId: stockCorrection.id, updateFormDto }).call());
+          const data = await new FindOne(tenantDatabase, stockCorrection.id).call();
+          expect(data.stockCorrection.items[0].finalStock).toEqual(100+updateFormDto.items[0].stockCorrection);
+        })
     })
     
     describe('failed', () => {
@@ -123,7 +135,7 @@ describe('Stock Correction - Update Form', () => {
         });
 
         it('throws error when required data is empty', async () => {
-            updateFormDto.items = null;
+            updateFormDto.items = [];
       
             await expect(async () => {
               await new UpdateForm(tenantDatabase, { maker, stockCorrectionId: stockCorrection.id, updateFormDto }).call();
