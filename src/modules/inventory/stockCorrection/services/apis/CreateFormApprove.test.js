@@ -72,7 +72,7 @@ describe('Stock Correction - Create Form Approve', () => {
       expect(stockCorrectionForm.approvalStatus).toEqual(1);
     });
 
-    it('check stock increased if quantity minus', async() => {
+    it('check stock increased if quantity not minus', async() => {
       const data = await new FindOne(tenantDatabase, stockCorrection.id).call();
       const currentStock = data.stockCorrection.items[0].initialStock;
 
@@ -93,7 +93,7 @@ describe('Stock Correction - Create Form Approve', () => {
       expect(updatedStock).toEqual(currentStock+10);
     })
 
-    it('check stock increased if quantity not minus', async() => {
+    it('check stock decrease if quantity minus', async() => {
       const data = await new FindOne(tenantDatabase, stockCorrection.id).call();
       const currentStock = data.stockCorrection.items[0].initialStock;
       
