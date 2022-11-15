@@ -20,6 +20,7 @@ const inventoryAudit = require('./inventoryAudit');
 const inventoryAuditItem = require('./inventoryAuditItem');
 const salesVisitation = require('./salesVisitation');
 const salesVisitationDetail = require('./salesVisitationDetail');
+const permission = require('./permission');
 
 const factory = {
   allocation,
@@ -44,6 +45,7 @@ const factory = {
   inventoryAuditItem,
   salesVisitation,
   salesVisitationDetail,
+  permission,
 };
 
 module.exports = factory;

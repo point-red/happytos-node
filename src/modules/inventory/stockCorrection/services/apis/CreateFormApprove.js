@@ -59,13 +59,13 @@ async function validate(tenantDatabase, { stockCorrectionForm, approver }) {
       formNumber: stockCorrectionForm.number,
       formStatus: stockCorrectionForm.status,
       formType: stockCorrectionForm.formableType,
-      projectName: project.name,
+      //projectName: project.name,
     });
   }
   // super admin
-  if (approver.modelHasRole?.role?.name === 'super admin') {
-    return true;
-  }
+  // if (approver.modelHasRole?.role?.name === 'super admin') {
+  //   return true;
+  // }
   if (stockCorrectionForm.requestApprovalTo !== approver.id) {
     throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
   }
@@ -89,7 +89,7 @@ async function updateStockCorretionItems(tenantDatabase, { stockCorrection, tran
         formNumber: stockCorrectionForm.number,
         formStatus: stockCorrectionForm.approvalStatus,
         formType: stockCorrectionForm.formableType,
-        projectName: project.name,
+        //projectName: project.name,
       });
     }
 

@@ -23,7 +23,7 @@ describe('Inventory Model', () => {
 
       const expiryDate = new Date('2022-03-03');
       inventory.expiryDate = expiryDate;
-      expect(inventory.expiryDate).toEqual('2022-03-03 07:00:00');
+      expect(inventory.expiryDate).toContain('2022-03-03');
     });
   });
 });

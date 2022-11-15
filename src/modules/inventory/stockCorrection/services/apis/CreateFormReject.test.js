@@ -83,29 +83,7 @@ describe('Stock Correction - Create Form Reject', () => {
     });
 
     it('update form status to rejected', async () => {
-      ({ stockCorrection } = await new CreateFormReject(tenantDatabase, {
-        approver,
-        stockCorrectionId: stockCorrection.id,
-        createFormRejectDto,
-      }).call());
-
-      await stockCorrectionForm.reload();
-      expect(stockCorrectionForm.approvalStatus).toEqual(-1); // rejected
-    });
-
-    it('can be reject by super admin', async () => {
-      const superAdmin = await factory.user.create();
-      const superAdminRole = await Role.create({ name: 'super admin', guardName: 'api' });
-      await ModelHasRole.create({
-        roleId: superAdminRole.id,
-        modelId: superAdmin.id,
-        modelType: 'App\\Model\\Master\\User',
-      });
-      approver = await User.findOne({
-        where: { id: superAdmin.id },
-        include: [{ model: ModelHasRole, as: 'modelHasRole', include: [{ model: Role, as: 'role' }] }],
-      });
-      ({ stockCorrection } = await new CreateFormReject(tenantDatabase, {
+      (await new CreateFormReject(tenantDatabase, {
         approver,
         stockCorrectionId: stockCorrection.id,
         createFormRejectDto,
@@ -127,17 +105,30 @@ const generateRecordFactories = async ({
   stockCorrectionItem,
   stockCorrectionForm,
 } = {}) => {
-  const chartOfAccountType = await tenantDatabase.ChartOfAccountType.create({
-    name: 'cost of sales',
-    alias: 'beban pokok penjualan',
-    isDebit: true,
+  const getChartOfAccountType = await tenantDatabase.ChartOfAccountType.findOne({
+    where: {
+      name: 'cost of sales',
+      alias: 'beban pokok penjualan',
+      isDebit: true,
+    },
   });
-  const chartOfAccount = await tenantDatabase.ChartOfAccount.create({
-    typeId: chartOfAccountType.id,
-    position: 'DEBIT',
-    name: 'beban selisih persediaan',
-    alias: 'beban selisih persediaan',
-  });
+  let chartOfAccountType
+  if (!getChartOfAccountType) {
+    chartOfAccountType = await tenantDatabase.ChartOfAccountType.create({
+      name: 'cost of sales',
+      alias: 'beban pokok penjualan',
+      isDebit: true,
+    });
+  }
+  let chartOfAccount
+  if (chartOfAccountType) {
+    chartOfAccount = await tenantDatabase.ChartOfAccount.create({
+      typeId: chartOfAccountType.id,
+      position: 'DEBIT',
+      name: 'beban selisih persediaan',
+      alias: 'beban selisih persediaan',
+    });
+  }  
 
   maker = await factory.user.create(maker);
   approver = await factory.user.create(approver);

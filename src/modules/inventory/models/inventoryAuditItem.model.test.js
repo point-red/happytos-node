@@ -13,7 +13,7 @@ describe('Inventory Audit Item Model', () => {
 
       const expiryDate = new Date('2022-03-03');
       inventoryAuditItem.expiryDate = expiryDate;
-      expect(inventoryAuditItem.expiryDate).toEqual('2022-03-03 07:00:00');
+      expect(inventoryAuditItem.expiryDate).toContain('2022-03-03');
     });
 
     it('returns correct price value', () => {

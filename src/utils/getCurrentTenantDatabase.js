@@ -9,11 +9,11 @@ module.exports = async function getCurrentTenantDatabase(tenantName) {
   }
 
   const project = await Project.findOne({ where: { code: tenantName } });
-  if (!project) {
-    throw new Error('Tenant project is not exist');
-  }
+  // if (!project) {
+  //   throw new Error('Tenant project is not exist');
+  // }
 
-  const currentTenantDatabase = tenantModels.addOrFindNewProjectDatabase(database, project.code);
+  const currentTenantDatabase = tenantModels.addOrFindNewProjectDatabase(database, 'happytos');
 
   return currentTenantDatabase;
 };

@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const ApiError = require('@src/utils/ApiError');
+const validatePermission = require('@src/utils/permission');
 const GetCurrentStock = require('@src/modules/inventory/services/GetCurrentStock');
 const ProcessSendCreateApprovalWorker = require('../../workers/ProcessSendCreateApproval.worker');
 
@@ -12,11 +13,11 @@ class CreateFormRequest {
 
   async call() {
     const currentDate = new Date(Date.now());
-    const { warehouseId } = this.createFormRequestDto;
+    const { warehouseId, requestApprovalTo } = this.createFormRequestDto;
     const warehouse = await this.tenantDatabase.Warehouse.findOne({
       where: { id: warehouseId },
     });
-    await validate(this.tenantDatabase, { warehouse, maker: this.maker });
+    await validate(this.tenantDatabase, { warehouse, maker: this.maker, requestApprovalTo });
 
     let stockCorrection, stockCorrectionForm;
     await this.tenantDatabase.sequelize.transaction(async (transaction) => {
@@ -48,9 +49,11 @@ class CreateFormRequest {
   }
 }
 
-async function validate(tenantDatabase, { warehouse, maker }) {
+async function validate(tenantDatabase, { warehouse, maker, requestApprovalTo }) {
   await validateBranchDefaultPermission(tenantDatabase, { makerId: maker.id, branchId: warehouse.branchId });
   await validateWarehouseDefaultPermission(tenantDatabase, { makerId: maker.id, warehouseId: warehouse.id });
+  await validatePermission(tenantDatabase, { userId: maker.id, permissionName: 'create stock correction' });
+  await validatePermission(tenantDatabase, { userId: requestApprovalTo, permissionName: 'approve stock correction' });
 }
 
 async function validateBranchDefaultPermission(tenantDatabase, { makerId, branchId }) {
@@ -80,6 +83,9 @@ async function validateWarehouseDefaultPermission(tenantDatabase, { makerId, war
 }
 
 async function createStockCorrection(tenantDatabase, { createFormRequestDto, transaction }) {
+  if (!createFormRequestDto.typeCorrection) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
+  }
   const stockCorrection = await tenantDatabase.StockCorrection.create(
     {
       warehouseId: createFormRequestDto.warehouseId,
@@ -109,7 +115,7 @@ async function createStockCorrectionForm(
 }
 
 async function buildFormData(tenantDatabase, { maker, warehouse, createFormRequestDto, stockCorrection, currentDate }) {
-  const { notes, requestApprovalTo } = createFormRequestDto;
+  let { notes, requestApprovalTo } = createFormRequestDto;
   const { incrementNumber, incrementGroup } = await getFormIncrement(tenantDatabase, currentDate);
   const formNumber = generateFormNumber(currentDate, incrementNumber);
   const approver = await tenantDatabase.User.findOne({ where: { id: requestApprovalTo } });
@@ -117,11 +123,21 @@ async function buildFormData(tenantDatabase, { maker, warehouse, createFormReque
     throw new ApiError(httpStatus.BAD_REQUEST, 'Approver is not exist');
   }
 
+  if (notes) {
+    if (notes.charAt(0) === ' ') {
+      notes = notes.substring(1)
+    }
+  
+    if (notes.charAt(notes.length - 1) === ' ') {
+      notes = notes.slice(0, -1);
+    }
+  }  
+
   return {
     branchId: warehouse.branchId,
     date: new Date(),
     number: formNumber,
-    notes,
+    notes: notes ? notes.replace(/  /g, ' ').substring(0, 255) : notes,
     createdBy: maker.id,
     updatedBy: maker.id,
     incrementNumber,
@@ -170,9 +186,15 @@ async function addStockCorrectionItem(
   { stockCorrection, stockCorrectionForm, warehouse, createFormRequestDto, transaction }
 ) {
   const { items: itemsRequest } = createFormRequestDto;
+  if (!itemsRequest || itemsRequest?.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
+  }
   const doAddStockCorrectionItem = itemsRequest.map(async (itemRequest) => {
     if (itemRequest.converter !== 1) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Only can use smallest item unit');
+    }
+    if (typeof itemRequest.stockCorrection === 'string') {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid data');
     }
     const item = await tenantDatabase.Item.findOne({ where: { id: itemRequest.itemId } });
     const itemStock = await new GetCurrentStock(tenantDatabase, {
