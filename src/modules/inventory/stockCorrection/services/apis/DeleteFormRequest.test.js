@@ -160,6 +160,21 @@ describe('Stock Correction - Delete Form Request', () => {
         }).call());
       }).rejects.toThrow(new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'reason cannot empty'));
     });
+
+    it('throw error if stock became minus if form deleted', async () => {
+      const recordFactories = await generateRecordFactories();
+      let { stockCorrection, stockCorrectionItem, maker } = recordFactories;
+      await stockCorrectionItem.update({ quantity: 110 });
+      await expect(async () => {
+        ({ stockCorrection } = await new DeleteFormRequest(tenantDatabase, {
+          maker,
+          stockCorrectionId: stockCorrection.id,
+          deleteFormRequestDto: {
+            reason: 'delete',
+          },
+        }).call());
+      }).rejects.toThrow(new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'Stock will minus if you delete this form'));
+    });
   });
 });
 
@@ -197,6 +212,20 @@ const generateRecordFactories = async ({
     formable: stockCorrection,
     formableType: 'StockCorrection',
     number: 'SC2101001',
+  });
+  const inventoryForm = await factory.form.create({
+    date: new Date('2022-01-01'),
+    branch,
+    number: 'PI2101001',
+    formable: { id: 1 },
+    formableType: 'PurchaseInvoice',
+    createdBy: maker.id,
+    updatedBy: maker.id,
+  });
+  await factory.inventory.create({
+    form: inventoryForm,
+    warehouse,
+    item,
   });
 
   return {
