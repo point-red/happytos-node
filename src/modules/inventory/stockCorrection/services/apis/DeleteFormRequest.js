@@ -51,7 +51,7 @@ async function checkStockCorretionItems(tenantDatabase, { stockCorrection }) {
   const doCheckStockCorrectionItems = stockCorrectionItems.map(async (stockCorrectionItem) => {
     const currentStock = await new GetCurrentStock(tenantDatabase, {
       item: stockCorrectionItem.item,
-      date: stockCorrectionForm.date,
+      date: new Date(),
       warehouseId: stockCorrection.warehouseId,
       options: {
         expiryDate: stockCorrectionItem.expiryDate,

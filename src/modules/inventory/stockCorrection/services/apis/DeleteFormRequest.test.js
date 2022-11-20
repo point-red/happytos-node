@@ -163,8 +163,23 @@ describe('Stock Correction - Delete Form Request', () => {
 
     it('throw error if stock became minus if form deleted', async () => {
       const recordFactories = await generateRecordFactories();
-      let { stockCorrection, stockCorrectionItem, maker } = recordFactories;
-      await stockCorrectionItem.update({ quantity: 110 });
+      let { stockCorrection, item, maker, warehouse, branch } = recordFactories;
+
+      const inventoryForm = await factory.form.create({
+        date: new Date(),
+        branch,
+        number: 'SI2101001',
+        formable: { id: 1 },
+        formableType: 'SalesInvoice',
+        createdBy: maker.id,
+        updatedBy: maker.id,
+      });
+      await factory.inventory.createMinus({
+        form: inventoryForm,
+        warehouse,
+        item,
+      });
+
       await expect(async () => {
         ({ stockCorrection } = await new DeleteFormRequest(tenantDatabase, {
           maker,
@@ -205,6 +220,7 @@ const generateRecordFactories = async ({
     item,
   });
   stockCorrectionForm = await factory.form.create({
+    date: new Date('2022-01-02'),
     branch,
     createdBy: maker.id,
     updatedBy: maker.id,
