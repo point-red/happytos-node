@@ -76,7 +76,7 @@ describe('Stock Correction - Create Form Request', () => {
 
     it('can create with expiry date and production number', async () => {
       createFormRequestDto.items[0].expiryDate = new Date('2022-03-01T17:00:00.000Z');
-      console.log(createFormRequestDto.items[0].expiryDate);
+
       createFormRequestDto.items[0].productionNumber = '001';
       ({ stockCorrection, stockCorrectionForm } = await new CreateFormRequest(tenantDatabase, {
         maker,
@@ -85,7 +85,7 @@ describe('Stock Correction - Create Form Request', () => {
 
       expect(stockCorrectionForm).toBeDefined();
       const stockCorrectionItems = await stockCorrection.getItems();
-      expect(stockCorrectionItems[0].expiryDate).toEqual('2022-03-01 00:00:00');
+      expect(stockCorrectionItems[0].expiryDate).toEqual('2022-03-02 00:00:00');
       expect(stockCorrectionItems[0].productionNumber).toEqual('001');
     });
 
