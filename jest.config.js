@@ -1,3 +1,4 @@
+process.env.TZ = 'Asia/Bangkok',
 module.exports = {
   roots: ['<rootDir>/src'],
   testEnvironment: 'node',
