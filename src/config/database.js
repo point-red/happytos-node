@@ -1,4 +1,5 @@
 const config = require('./config');
+var fs = require('fs');
 
 const DIALECT = 'mysql';
 
@@ -6,6 +7,7 @@ module.exports = {
   development: {
     databases: {
       main: {
+        ssl:true,
         username: config.database.username,
         password: config.database.password,
         database: config.database.name,
@@ -15,9 +17,13 @@ module.exports = {
         logging: config.database.logging,
         dialectOptions: {
           bigNumberStrings: true,
+          ssl: {
+            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+          },
         },
       },
       tenant: {
+        ssl:true,
         username: config.tenantDatabase.username,
         password: config.tenantDatabase.password,
         database: config.tenantDatabase.name,
@@ -27,6 +33,9 @@ module.exports = {
         logging: config.tenantDatabase.logging,
         dialectOptions: {
           bigNumberStrings: true,
+          ssl: {
+            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+          },
         },
       },
     },
@@ -90,6 +99,7 @@ module.exports = {
   production: {
     databases: {
       main: {
+        ssl:true,
         username: config.database.username,
         password: config.database.password,
         database: config.database.name,
@@ -99,9 +109,13 @@ module.exports = {
         dialect: DIALECT,
         dialectOptions: {
           bigNumberStrings: true,
+          ssl: {
+            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+          },
         },
       },
       tenant: {
+        ssl:true,
         username: config.tenantDatabase.username,
         password: config.tenantDatabase.password,
         database: config.tenantDatabase.name,
@@ -111,6 +125,9 @@ module.exports = {
         dialect: DIALECT,
         dialectOptions: {
           bigNumberStrings: true,
+          ssl: {
+            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+          },
         },
       },
     },

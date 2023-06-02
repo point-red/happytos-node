@@ -119,7 +119,7 @@ function generateFilterFormStatus(formQueries) {
     approvalApproved: 1,
     approvalRejected: -1,
   };
-
+  result.push({ '$form.cancellation_status$': null });
   if (doneStatus !== 'null') {
     if (doneStatus === 'cancellationApproved') {
       result.push({ '$form.cancellation_status$': 1 });

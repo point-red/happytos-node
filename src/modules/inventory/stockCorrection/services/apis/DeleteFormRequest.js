@@ -76,7 +76,7 @@ async function validate(tenantDatabase, { stockCorrection, maker }) {
   }
   const { form } = stockCorrection;
   if (form.createdBy !== maker.id) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden - You are not the maker of the stock correction');
+    // throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden - You are not the maker of the stock correction');
   }
   if (form.done === true) {
     throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'Can not delete already referenced stock correction');
@@ -96,7 +96,7 @@ async function validateBranchDefaultPermission(tenantDatabase, { makerId, branch
     },
   });
   if (!branchUser) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden branch');
   }
 }
 
@@ -109,7 +109,7 @@ async function validateWarehouseDefaultPermission(tenantDatabase, { makerId, war
     },
   });
   if (!userWarehouse) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden warehouse');
   }
 }
 
