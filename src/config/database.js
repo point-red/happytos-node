@@ -18,7 +18,7 @@ module.exports = {
         dialectOptions: {
           bigNumberStrings: true,
           ssl: {
-            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+            ca: fs.readFileSync('/home/point14/web/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
           },
         },
       },
@@ -34,7 +34,7 @@ module.exports = {
         dialectOptions: {
           bigNumberStrings: true,
           ssl: {
-            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+            ca: fs.readFileSync('/home/point14/web/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
           },
         },
       },
@@ -110,7 +110,7 @@ module.exports = {
         dialectOptions: {
           bigNumberStrings: true,
           ssl: {
-            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+            ca: fs.readFileSync('/home/point14/web/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
           },
         },
       },
@@ -126,7 +126,7 @@ module.exports = {
         dialectOptions: {
           bigNumberStrings: true,
           ssl: {
-            ca: fs.readFileSync('/home/martiendt/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
+            ca: fs.readFileSync('/home/point14/web/happytos-node.point.red/happytos-ca-certificate.crt').toString(),
           },
         },
       },
